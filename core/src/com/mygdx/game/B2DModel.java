@@ -16,29 +16,35 @@ public class B2DModel {
     private Body bodyd;
     private Body bodys;
     private Body bodyk;
+    private Body player;
+    public boolean isSwimming = false;
 
     public B2DModel(){
         world = new World(new Vector2(0, -10f), true);
-
+        world.setContactListener(new B2DContactListener(this));
         createFloor();
-        createObject();
-        createMovingObject();
+        //createObject();
+        //createMovingObject();
 
         // get our body factory singleton and store it in bodyFactory
         BodyFactory bodyFactory = BodyFactory.getInstance(world);
 
-        // add a new rubber ball at position 1, 1
-        bodyFactory.makeCirclePolyBody(1, 1, 2, BodyFactory.RUBBER);
+        // add a player
+        player = bodyFactory.makeBoxPolyBody(1, 1, 2, 2, BodyFactory.RUBBER, BodyDef.BodyType.DynamicBody,false);
 
-        // add a new steel ball at position 4, 1
-        bodyFactory.makeCirclePolyBody(4, 1, 2, BodyFactory.STEEL);
+        // add some water
+        Body water =  bodyFactory.makeBoxPolyBody(1, -8, 40, 10, BodyFactory.RUBBER, BodyDef.BodyType.StaticBody,false);
+        water.setUserData("IAMTHESEA");
 
-        // add a new stone at position -4,1
-        bodyFactory.makeCirclePolyBody(-4, 1, 2, BodyFactory.STONE);
+        // make the water a sensor so it doesn't obstruct our player
+        bodyFactory.makeAllFixturesSensors(water);
     }
 
     // our game logic here
     public void logicStep(float delta){
+        if(isSwimming){
+            player.applyForceToCenter(0, 50, true);
+        }
         world.step(delta , 3, 3);
     }
 
